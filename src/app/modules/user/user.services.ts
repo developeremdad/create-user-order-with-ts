@@ -37,16 +37,10 @@ const getUserDetailsService = async (userId: number) => {
   }
 };
 
-// add order service
-const addNewOrderService = async (userId: number, orderData: TOrder) => {
+// update user fields
+const updateUserService = async (userId: number, updateData: TUser) => {
   if (await userModel.isUserExists(userId)) {
-    const result = await userModel.updateOne(
-      { userId },
-      { $addToSet: { orders: orderData } },
-      { upsert: true }
-    );
-    console.log(result);
-
+    const result = await userModel.updateOne({ userId }, updateData);
     return result;
   } else {
     throw new Error('User no found');
@@ -59,10 +53,49 @@ const deleteUserService = async (userId: number) => {
   return result;
 };
 
-// update user fields
-const updateUserService = async (userId: number, updateData: TUser) => {
+// add order service
+const addNewOrderService = async (userId: number, orderData: TOrder) => {
   if (await userModel.isUserExists(userId)) {
-    const result = await userModel.updateOne({ userId }, updateData);
+    const result = await userModel.updateOne(
+      { userId },
+      { $addToSet: { orders: orderData } },
+      { upsert: true }
+    );
+
+    return result;
+  } else {
+    throw new Error('User no found');
+  }
+};
+
+// Retrieve all orders
+const retrieveOrdersService = async (userId: number) => {
+  const user = await userModel.isUserExists(userId);
+  if (user) {
+    return user.orders;
+  } else {
+    throw new Error('User no found');
+  }
+};
+
+// calculate total price of user
+const calculateTotalOrderPriceService = async (userId: number) => {
+  if (await userModel.isUserExists(userId)) {
+    const result = await userModel.aggregate([
+      {
+        $match: {
+          userId: userId,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalPrice: {
+            $sum: '$orders.price',
+          },
+        },
+      },
+    ]);
     return result;
   } else {
     throw new Error('User no found');
@@ -73,7 +106,9 @@ export const userService = {
   createNewUserService,
   retrieveAllUsersServices,
   getUserDetailsService,
+  updateUserService,
   deleteUserService,
   addNewOrderService,
-  updateUserService,
+  retrieveOrdersService,
+  calculateTotalOrderPriceService,
 };
