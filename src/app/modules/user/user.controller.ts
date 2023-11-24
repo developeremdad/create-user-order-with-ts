@@ -36,7 +36,7 @@ const createNewUser = async (req: Request, res: Response) => {
       message: 'Something went wrong',
       error: {
         code: 404,
-        description: error,
+        description: error.message,
       },
     });
   }
@@ -62,13 +62,13 @@ const retrieveAllUsers = async (_req: Request, res: Response) => {
         },
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     res.status(404).json({
       success: false,
       message: 'Something went wrong',
       error: {
         code: 404,
-        description: error,
+        description: error.message,
       },
     });
   }
@@ -78,20 +78,20 @@ const retrieveAllUsers = async (_req: Request, res: Response) => {
 const getUserDetails = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const result = await userService.getUserDetailsService(userId);
+    const result = await userService.getUserDetailsService(Number(userId));
 
     res.status(200).json({
       success: true,
       message: 'User fetched successfully!',
       data: result,
     });
-  } catch (error) {
+  } catch (error: any) {
     res.status(404).json({
       success: false,
-      message: 'Something went wrong',
+      message: error.message || 'Something went wrong',
       error: {
         code: 404,
-        description: error,
+        description: error.message,
       },
     });
   }

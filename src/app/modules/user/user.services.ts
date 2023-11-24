@@ -1,8 +1,12 @@
 import { TUser } from './user.interface';
-import userModel from './user.model';
+import { userModel } from './user.model';
 
 // create and store new user
 const createNewUserService = async (userData: TUser) => {
+  const user = await userModel.isUserExists(userData.userId);
+  if (user) {
+    throw new Error('User already exists!');
+  }
   const result = await userModel.create(userData);
   return result;
 };
@@ -24,9 +28,13 @@ const retrieveAllUsersServices = async () => {
 };
 
 // Get specific user details
-const getUserDetailsService = async (userId: string) => {
-  const result = await userModel.findOne({ _id: Object(userId) });
-  return result;
+const getUserDetailsService = async (userId: number) => {
+  const user = await userModel.isUserExists(userId);
+  if (user) {
+    return user;
+  } else {
+    throw new Error('User no found');
+  }
 };
 
 export const userService = {
