@@ -1,5 +1,8 @@
+import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
+import config from '../../config';
 import { TUser } from './user.interface';
+import { userModel } from './user.model';
 import { userService } from './user.services';
 import userValidationSchema from './user.validation';
 
@@ -97,8 +100,127 @@ const getUserDetails = async (req: Request, res: Response) => {
   }
 };
 
+// add new order product
+// const addOrderToUser = async (req: Request, res: Response) => {
+//   const { userId } = req.params;
+//   const orderData = req.body;
+//   try {
+//     const result = await userService.addNewOrderService(
+//       Number(userId),
+//       orderData
+//     );
+//     if (result.modifiedCount !== 0) {
+//       res.status(200).json({
+//         success: true,
+//         message: 'Order created successfully!',
+//         data: null,
+//       });
+//     } else {
+//       res.status(400).json({
+//         success: false,
+//         message: 'Order already exist',
+//         error: {
+//           code: 400,
+//           description: 'Order already exist',
+//         },
+//       });
+//     }
+//   } catch (error: any) {
+//     res.status(404).json({
+//       success: false,
+//       message: error.message || 'Something went wrong',
+//       error: {
+//         code: 404,
+//         description: error.message,
+//       },
+//     });
+//   }
+// };
+
+// delete user data
+const deleteUserData = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    await userService.deleteUserService(Number(userId));
+    res.status(200).json({
+      success: true,
+      message: 'User deleted successfully!',
+      data: null,
+    });
+  } catch (error: any) {
+    res.status(404).json({
+      success: false,
+      message: error.message || 'Something went wrong',
+      error: {
+        code: 404,
+        description: error.message,
+      },
+    });
+  }
+};
+
+// update user data
+const updateUserData = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const updateData = req.body;
+    const user = await userModel.isUserExists(Number(userId));
+    if (user) {
+      // marge rest of data and set for update
+      const mergedData: TUser = {
+        ...user,
+        ...updateData,
+        password: updateData.password
+          ? await bcrypt.hash(
+              updateData.password,
+              Number(config.bcrypt_salt_rounds)
+            )
+          : user.password,
+      };
+
+      const parseUpdateData = userValidationSchema.parse(mergedData);
+
+      const updatedUser = await userService.updateUserService(
+        Number(userId),
+        parseUpdateData
+      );
+
+      // send response
+      if (updatedUser.modifiedCount !== 0) {
+        res.status(200).json({
+          success: true,
+          message: 'User updated successfully!',
+          data: null,
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: 'User already up to date',
+          error: {
+            code: 404,
+            description: 'User already up to date',
+          },
+        });
+      }
+    } else {
+      throw new Error('User not found');
+    }
+  } catch (error: any) {
+    res.status(404).json({
+      success: false,
+      message: error.message || 'Something went wrong',
+      error: {
+        code: 404,
+        description: error.message || error,
+      },
+    });
+  }
+};
+
 export const userController = {
   createNewUser,
   retrieveAllUsers,
   getUserDetails,
+  deleteUserData,
+  updateUserData,
 };

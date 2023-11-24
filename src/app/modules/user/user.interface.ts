@@ -28,7 +28,7 @@ export type TOrder = {
 // create and export user type for reuseable
 export type TUser = {
   userId: number;
-  userName: string;
+  username: string;
   password: string;
   fullName: TFullName;
   age: number;

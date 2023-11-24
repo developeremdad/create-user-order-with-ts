@@ -37,8 +37,38 @@ const getUserDetailsService = async (userId: number) => {
   }
 };
 
+// add order service
+// const addNewOrderService = async (userId: number, orderData: TOrder) => {
+//   if (await userModel.isUserExists(userId)) {
+//     const result = await userModel.updateOne(
+//       { userId },
+//       { $addToSet: { orders: orderData } }
+//     );
+//     return result;
+//   } else {
+//     throw new Error('User no found');
+//   }
+// };
+
+// Delete user data by userId
+const deleteUserService = async (userId: number) => {  const result = await userModel.deleteOne({ userId });
+  return result;
+};
+
+// update user fields
+const updateUserService = async (userId: number, updateData: TUser) => {
+  if (await userModel.isUserExists(userId)) {
+    const result = await userModel.updateOne({ userId }, updateData);
+    return result;
+  } else {
+    throw new Error('User no found');
+  }
+};
+
 export const userService = {
   createNewUserService,
   retrieveAllUsersServices,
   getUserDetailsService,
+  deleteUserService,
+  updateUserService,
 };

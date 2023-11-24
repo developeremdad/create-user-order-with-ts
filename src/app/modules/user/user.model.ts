@@ -68,10 +68,10 @@ const userSchema = new Schema<TUser, StaticUserModel>({
     unique: true,
     required: [true, 'userId field is required'],
   },
-  userName: {
+  username: {
     type: String,
     unique: true,
-    required: [true, 'userName field is required'],
+    required: [true, 'username field is required'],
   },
   password: {
     type: String,
@@ -85,7 +85,6 @@ const userSchema = new Schema<TUser, StaticUserModel>({
   email: {
     type: String,
     required: [true, 'email field is required'],
-    unique: true,
   },
   isActive: {
     type: Boolean,
@@ -97,7 +96,6 @@ const userSchema = new Schema<TUser, StaticUserModel>({
     required: [true, 'hobbies field is required'],
   },
   address: addressSchema,
-  orders: [orderSchema],
 });
 
 // hashing password using bcrypt
@@ -120,6 +118,11 @@ userSchema.post('save', function (doc, nex) {
 // check query middleware method
 userSchema.pre('find', function (next) {
   this.find({}, { password: 0 });
+  next();
+});
+
+userSchema.pre('findOne', function (next) {
+  this.findOne(this.getQuery(), { password: 0 });
   next();
 });
 
