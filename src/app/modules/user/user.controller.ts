@@ -6,6 +6,7 @@ import { userModel } from './user.model';
 import { userService } from './user.services';
 import userValidationSchema, { orderValidation } from './user.validation';
 
+// create new user if not exist
 const createNewUser = async (req: Request, res: Response) => {
   try {
     const userData: TUser = req.body;
@@ -243,7 +244,7 @@ const retrieveOrders = async (req: Request, res: Response) => {
   }
 };
 
-
+// calculate total order price
 const calculateTotalOrderPrice = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
