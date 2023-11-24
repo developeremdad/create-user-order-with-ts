@@ -16,12 +16,13 @@ const userValidationSchema = z.object({
     street: z.string(),
     city: z.string(),
     country: z.string(),
-  })
+  }),
 });
 
-userValidationSchema.required({
-  userId: true,
-  userName: true,
+export const orderValidation = z.object({
+  productName: z.string(),
+  price: z.number(),
+  quantity: z.number(),
 });
 
 export default userValidationSchema;

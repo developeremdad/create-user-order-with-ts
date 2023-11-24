@@ -96,6 +96,7 @@ const userSchema = new Schema<TUser, StaticUserModel>({
     required: [true, 'hobbies field is required'],
   },
   address: addressSchema,
+  orders: [orderSchema],
 });
 
 // hashing password using bcrypt

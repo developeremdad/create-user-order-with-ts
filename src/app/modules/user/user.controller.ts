@@ -4,7 +4,7 @@ import config from '../../config';
 import { TUser } from './user.interface';
 import { userModel } from './user.model';
 import { userService } from './user.services';
-import userValidationSchema from './user.validation';
+import userValidationSchema, { orderValidation } from './user.validation';
 
 const createNewUser = async (req: Request, res: Response) => {
   try {
@@ -101,41 +101,44 @@ const getUserDetails = async (req: Request, res: Response) => {
 };
 
 // add new order product
-// const addOrderToUser = async (req: Request, res: Response) => {
-//   const { userId } = req.params;
-//   const orderData = req.body;
-//   try {
-//     const result = await userService.addNewOrderService(
-//       Number(userId),
-//       orderData
-//     );
-//     if (result.modifiedCount !== 0) {
-//       res.status(200).json({
-//         success: true,
-//         message: 'Order created successfully!',
-//         data: null,
-//       });
-//     } else {
-//       res.status(400).json({
-//         success: false,
-//         message: 'Order already exist',
-//         error: {
-//           code: 400,
-//           description: 'Order already exist',
-//         },
-//       });
-//     }
-//   } catch (error: any) {
-//     res.status(404).json({
-//       success: false,
-//       message: error.message || 'Something went wrong',
-//       error: {
-//         code: 404,
-//         description: error.message,
-//       },
-//     });
-//   }
-// };
+const addOrderToUser = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const orderData = req.body;
+  try {
+    // check validation by zod
+    const parsedData = orderValidation.parse(orderData);
+
+    const result = await userService.addNewOrderService(
+      Number(userId),
+      parsedData
+    );
+    if (result.modifiedCount !== 0) {
+      res.status(200).json({
+        success: true,
+        message: 'Order created successfully!',
+        data: null,
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: 'Order already exist',
+        error: {
+          code: 400,
+          description: 'Order already exist',
+        },
+      });
+    }
+  } catch (error: any) {
+    res.status(404).json({
+      success: false,
+      message: error.message || 'Something went wrong',
+      error: {
+        code: 404,
+        description: error.message || error,
+      },
+    });
+  }
+};
 
 // delete user data
 const deleteUserData = async (req: Request, res: Response) => {
@@ -222,5 +225,6 @@ export const userController = {
   retrieveAllUsers,
   getUserDetails,
   deleteUserData,
+  addOrderToUser,
   updateUserData,
 };

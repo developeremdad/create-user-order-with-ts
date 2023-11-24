@@ -1,4 +1,4 @@
-import { TUser } from './user.interface';
+import { TOrder, TUser } from './user.interface';
 import { userModel } from './user.model';
 
 // create and store new user
@@ -38,20 +38,24 @@ const getUserDetailsService = async (userId: number) => {
 };
 
 // add order service
-// const addNewOrderService = async (userId: number, orderData: TOrder) => {
-//   if (await userModel.isUserExists(userId)) {
-//     const result = await userModel.updateOne(
-//       { userId },
-//       { $addToSet: { orders: orderData } }
-//     );
-//     return result;
-//   } else {
-//     throw new Error('User no found');
-//   }
-// };
+const addNewOrderService = async (userId: number, orderData: TOrder) => {
+  if (await userModel.isUserExists(userId)) {
+    const result = await userModel.updateOne(
+      { userId },
+      { $addToSet: { orders: orderData } },
+      { upsert: true }
+    );
+    console.log(result);
+
+    return result;
+  } else {
+    throw new Error('User no found');
+  }
+};
 
 // Delete user data by userId
-const deleteUserService = async (userId: number) => {  const result = await userModel.deleteOne({ userId });
+const deleteUserService = async (userId: number) => {
+  const result = await userModel.deleteOne({ userId });
   return result;
 };
 
@@ -70,5 +74,6 @@ export const userService = {
   retrieveAllUsersServices,
   getUserDetailsService,
   deleteUserService,
+  addNewOrderService,
   updateUserService,
 };
