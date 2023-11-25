@@ -121,4 +121,9 @@ userSchema.statics.isUserExists = function (userId) {
         return existingUser;
     });
 };
+userSchema.statics.userWithPassword = function (userId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return this.findOne({ userId }, { password: 1 });
+    });
+};
 exports.userModel = (0, mongoose_1.model)('user', userSchema);

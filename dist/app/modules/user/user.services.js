@@ -53,8 +53,13 @@ const updateUserService = (userId, updateData) => __awaiter(void 0, void 0, void
 });
 // Delete user data by userId
 const deleteUserService = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_model_1.userModel.deleteOne({ userId });
-    return result;
+    if (yield user_model_1.userModel.isUserExists(userId)) {
+        const result = yield user_model_1.userModel.deleteOne({ userId });
+        return result;
+    }
+    else {
+        throw new Error('User no found');
+    }
 });
 // add order service
 const addNewOrderService = (userId, orderData) => __awaiter(void 0, void 0, void 0, function* () {

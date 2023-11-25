@@ -136,15 +136,45 @@ const getUserDetails = (req, res) => __awaiter(void 0, void 0, void 0, function*
 });
 // update user data
 const updateUserData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
     try {
         const { userId } = req.params;
-        const updateData = req.body;
-        const user = yield user_model_1.userModel.isUserExists(Number(userId));
+        const newData = req.body;
+        // const user = await userModel.isUserExists(Number(userId));
+        const user = yield user_model_1.userModel.userWithPassword(Number(userId));
         if (user) {
-            // marge rest of data and set for update
-            const mergedData = Object.assign(Object.assign(Object.assign({}, user), updateData), { password: updateData.password
-                    ? yield bcrypt_1.default.hash(updateData.password, Number(config_1.default.bcrypt_salt_rounds))
-                    : user.password });
+            const mergedData = {
+                userId: newData.userId ? newData.userId : user.userId,
+                username: newData.username ? newData.username : user.username,
+                password: newData.password
+                    ? yield bcrypt_1.default.hash(newData.password, Number(config_1.default.bcrypt_salt_rounds))
+                    : user.password,
+                fullName: {
+                    firstName: ((_a = newData === null || newData === void 0 ? void 0 : newData.fullName) === null || _a === void 0 ? void 0 : _a.firstName)
+                        ? (_b = newData === null || newData === void 0 ? void 0 : newData.fullName) === null || _b === void 0 ? void 0 : _b.firstName
+                        : user.fullName.firstName,
+                    lastName: ((_c = newData === null || newData === void 0 ? void 0 : newData.fullName) === null || _c === void 0 ? void 0 : _c.lastName)
+                        ? (_d = newData === null || newData === void 0 ? void 0 : newData.fullName) === null || _d === void 0 ? void 0 : _d.lastName
+                        : (_e = user === null || user === void 0 ? void 0 : user.fullName) === null || _e === void 0 ? void 0 : _e.lastName,
+                },
+                age: newData.age ? newData.age : user.age,
+                email: newData.email ? newData.email : user.email,
+                isActive: newData.isActive ? newData.isActive : user.isActive,
+                hobbies: newData.hobbies ? newData.hobbies : user.hobbies,
+                address: {
+                    street: ((_f = newData.address) === null || _f === void 0 ? void 0 : _f.street)
+                        ? (_g = newData.address) === null || _g === void 0 ? void 0 : _g.street
+                        : (_h = user.address) === null || _h === void 0 ? void 0 : _h.street,
+                    city: ((_j = newData === null || newData === void 0 ? void 0 : newData.address) === null || _j === void 0 ? void 0 : _j.city)
+                        ? (_k = newData === null || newData === void 0 ? void 0 : newData.address) === null || _k === void 0 ? void 0 : _k.city
+                        : (_l = user === null || user === void 0 ? void 0 : user.address) === null || _l === void 0 ? void 0 : _l.city,
+                    country: ((_m = newData === null || newData === void 0 ? void 0 : newData.address) === null || _m === void 0 ? void 0 : _m.country)
+                        ? (_o = newData === null || newData === void 0 ? void 0 : newData.address) === null || _o === void 0 ? void 0 : _o.country
+                        : (_p = user === null || user === void 0 ? void 0 : user.address) === null || _p === void 0 ? void 0 : _p.country,
+                },
+                orders: user.orders,
+            };
+            // check validation using zod
             const parseUpdateData = user_validation_1.default.parse(mergedData);
             const updatedUser = yield user_services_1.userService.updateUserService(Number(userId), parseUpdateData);
             // send response

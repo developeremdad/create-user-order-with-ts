@@ -105,21 +105,47 @@ const getUserDetails = async (req: Request, res: Response) => {
 const updateUserData = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const updateData = req.body;
-    const user = await userModel.isUserExists(Number(userId));
+    const newData = req.body;
+    // const user = await userModel.isUserExists(Number(userId));
+    const user = await userModel.userWithPassword(Number(userId));
+
     if (user) {
-      // marge rest of data and set for update
       const mergedData: TUser = {
-        ...user,
-        ...updateData,
-        password: updateData.password
+        userId: newData.userId ? newData.userId : user.userId,
+        username: newData.username ? newData.username : user.username,
+        password: newData.password
           ? await bcrypt.hash(
-              updateData.password,
+              newData.password,
               Number(config.bcrypt_salt_rounds)
             )
           : user.password,
+        fullName: {
+          firstName: newData?.fullName?.firstName
+            ? newData?.fullName?.firstName
+            : user.fullName.firstName,
+          lastName: newData?.fullName?.lastName
+            ? newData?.fullName?.lastName
+            : user?.fullName?.lastName,
+        },
+        age: newData.age ? newData.age : user.age,
+        email: newData.email ? newData.email : user.email,
+        isActive: newData.isActive ? newData.isActive : user.isActive,
+        hobbies: newData.hobbies ? newData.hobbies : user.hobbies,
+        address: {
+          street: newData.address?.street
+            ? newData.address?.street
+            : user.address?.street,
+          city: newData?.address?.city
+            ? newData?.address?.city
+            : user?.address?.city,
+          country: newData?.address?.country
+            ? newData?.address?.country
+            : user?.address?.country,
+        },
+        orders: user.orders,
       };
 
+      // check validation using zod
       const parseUpdateData = userValidationSchema.parse(mergedData);
 
       const updatedUser = await userService.updateUserService(

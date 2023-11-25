@@ -132,4 +132,8 @@ userSchema.statics.isUserExists = async function (userId: number) {
   return existingUser;
 };
 
+userSchema.statics.userWithPassword = async function (userId: number) {
+  return this.findOne({ userId }, { password: 1 });
+};
+
 export const userModel = model<TUser, StaticUserModel>('user', userSchema);

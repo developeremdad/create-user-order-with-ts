@@ -42,3 +42,7 @@ export type TUser = {
 export interface StaticUserModel extends Model<TUser> {
   isUserExists(userId: number): Promise<TUser | null>;
 }
+
+export interface StaticUserModel extends Model<TUser> {
+  userWithPassword(userId: number): Promise<TUser | null>;
+}

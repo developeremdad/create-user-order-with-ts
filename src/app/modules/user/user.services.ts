@@ -49,8 +49,12 @@ const updateUserService = async (userId: number, updateData: TUser) => {
 
 // Delete user data by userId
 const deleteUserService = async (userId: number) => {
-  const result = await userModel.deleteOne({ userId });
-  return result;
+  if (await userModel.isUserExists(userId)) {
+    const result = await userModel.deleteOne({ userId });
+    return result;
+  } else {
+    throw new Error('User no found');
+  }
 };
 
 // add order service
