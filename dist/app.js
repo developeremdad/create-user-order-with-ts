@@ -11,7 +11,7 @@ const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
 // Application all routers
-app.use('/api/v1/users', user_routes_1.userRouter);
+app.use('/api/users', user_routes_1.userRouter);
 app.get('/', (_req, res) => {
     res.status(200).json({
         success: true,

@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cors());
 
 // Application all routers
-app.use('/api/v1/users', userRouter);
+app.use('/api/users', userRouter);
 
 app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({
