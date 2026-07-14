@@ -1,0 +1,265 @@
+{
+  "info": {
+    "_postman_id": "cd841485-42e6-4ca9-8cf7-a101f386434b",
+    "name": "Create User and Order with TypeScript API",
+    "description": "Postman documentation for the Express/Mongoose user and order API.\n\nSetup:\n1. Start MongoDB and configure `.env` with `PORT`, `DB_URL`, and `BCRYPT_SALT_ROUNDS`.\n2. Run `npm run start:dev` (or build and run `npm start`).\n3. Change the collection-level `baseUrl` variable if the API is not running at `http://localhost:5000`.\n\nFor a complete workflow, run Health Check, Create User, the read/update requests, the Orders requests, and Delete User last. The Create User test saves the returned `userId` as a collection variable. Authentication is not required by this API. Error responses currently use the shape `{ success, message, error: { code, description } }`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "1001",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/",
+        "description": "Checks whether the Express server is running. A successful response has HTTP 200 and `success: true`."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Server reports success', () => pm.expect(pm.response.json().success).to.eql(true));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1001,\n  \"username\": \"postman_user_1001\",\n  \"password\": \"StrongPassword123!\",\n  \"fullName\": {\n    \"firstName\": \"Postman\",\n    \"lastName\": \"User\"\n  },\n  \"age\": 28,\n  \"email\": \"postman.user1001@example.com\",\n  \"isActive\": true,\n  \"hobbies\": [\"coding\", \"reading\"],\n  \"address\": {\n    \"street\": \"123 API Street\",\n    \"city\": \"Dhaka\",\n    \"country\": \"Bangladesh\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/users",
+            "description": "Creates a user. Every field shown in the body is required by validation. `userId` and `username` must be unique, and `email` must be valid. The password is hashed before storage. Returns HTTP 200 on success."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('User is created', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Response contains the user', () => pm.expect(json.data).to.be.an('object'));",
+                  "if (json.data && json.data.userId !== undefined) pm.collectionVariables.set('userId', String(json.data.userId));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/users",
+            "description": "Returns all users with selected public fields. Passwords are excluded. Returns HTTP 200 with an array in `data`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Data is an array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/users/{{userId}}",
+            "description": "Returns one user selected by numeric `userId`. The password is excluded. Returns HTTP 404 if the user does not exist."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returned user ID matches', () => pm.expect(String(pm.response.json().data.userId)).to.eql(pm.collectionVariables.get('userId')));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"age\": 29,\n  \"isActive\": true,\n  \"hobbies\": [\"coding\", \"reading\", \"traveling\"],\n  \"address\": {\n    \"city\": \"Chattogram\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/users/{{userId}}",
+            "description": "Partially updates a user. Omitted fields retain their current values. Supported fields are `userId`, `username`, `password`, `fullName`, `age`, `email`, `isActive`, `hobbies`, and `address`. Returns HTTP 200 with `data: null` when changed, HTTP 400 when unchanged, or HTTP 404 when missing/invalid."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('User is updated', () => pm.response.to.have.status(200));",
+                  "pm.test('Success is true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/users/{{userId}}",
+            "description": "Deletes the user selected by numeric `userId`. Run this last because it also removes the user's embedded orders. Returns HTTP 200 on success or HTTP 404 if no user exists."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('User is deleted', () => pm.response.to.have.status(200));",
+                  "pm.test('Success is true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Add Order to User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productName\": \"Mechanical Keyboard\",\n  \"price\": 89.99,\n  \"quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/users/{{userId}}/orders",
+            "description": "Adds an order to the user's embedded `orders` array. `productName`, numeric `price`, and numeric `quantity` are required. Exact duplicate orders are rejected because the API uses MongoDB `$addToSet`. Returns HTTP 200 when added."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Order is added', () => pm.response.to.have.status(200));",
+                  "pm.test('Success is true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/users/{{userId}}/orders",
+            "description": "Returns the user's embedded orders as an array in `data`. Returns HTTP 404 if the user does not exist."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Orders are an array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Total Order Price",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/users/{{userId}}/orders/total-price",
+            "description": "Calculates the sum of the `price` fields for all orders belonging to the user. The current implementation does not multiply price by quantity. Returns `data` as an aggregation-result array such as `[{ \"totalPrice\": 89.99 }]`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Aggregation result is an array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
